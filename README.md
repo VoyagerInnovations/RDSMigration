@@ -2,7 +2,11 @@
 A fully automated RDS migration script.
 
 ## What the script does
-The quick brown fox
+Create a running copy of an existing MySQL RDS with encryption enabled (KMS).
+
+In detail, the following are the operations that will be performed:
+1. step 1
+2. step 2
 
 ## Diagram
 ![RDSMigrate Diagram](https://raw.githubusercontent.com/VoyagerInnovations/RDSMigration/master/images/rdsmigrate.png)
