@@ -8,7 +8,10 @@ The quick brown fox
 The quick brown fox
 
 ## Pre-requisites
-The scripts relies on AWS CLI to communicate to AWS. Please follow the [installation instructions](https://aws.amazon.com/cli/) from the official site.
+You need the following to run the script.
+
+1. An EC2 instance. This instance must be able to connect to both the source and target RDS
+2. [AWS CLI](https://aws.amazon.com/cli/) installed in the EC2 instance
 
 ## Using the script
 The quick brown fox
