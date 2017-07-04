@@ -5,7 +5,7 @@ A fully automated RDS migration script.
 The quick brown fox
 
 ## Diagram
-The quick brown fox
+![RDSMigrate Diagram](https://raw.githubusercontent.com/VoyagerInnovations/RDSMigration/master/images/rdsmigrate.png)
 
 ## Pre-requisites
 You need the following to run the script.
