@@ -15,3 +15,6 @@ You need the following to run the script.
 
 ## Using the script
 The quick brown fox
+
+## Limitations
+- This script only works for RDS MySQL
