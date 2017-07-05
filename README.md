@@ -1,8 +1,8 @@
 # RDSMigration
-A fully automated RDS migration script.
+A fully automated RDS migration (to encrypted) script.
 
 ## What the script does
-Create a running copy of an existing MySQL RDS with encryption enabled (KMS).
+Create a usable copy of an existing MySQL RDS with encryption enabled (KMS).
 
 In detail, the following are the operations that will be performed:
 1. step 1
