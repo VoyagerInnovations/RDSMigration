@@ -2,7 +2,7 @@
 
 TODAY=`date +%Y%m%d`
 POLICY_FILE_DIR=/home/ec2-user/RDSMigration
-POLICY_FILE_NAME=/home/ec2-user/RDSMigration/rds_kms_policy.json
+POLICY_FILE_NAME=$POLICY_FILE_DIR/rds_kms_policy.json
 
 usage () {
   printf "\nUsage: migrate_database_updated.sh [-i <iam_user_name>] [-r <instance_role_name>] [-n <db_instance_identifier>] [-u <db_admin_user>] [-p <db_admin_passwd>] [-m <yes/no> ] [-d <db_name>] [-s <yes/no>] [-t <db_instance_class>] [-a <account_number>] [-z <region>]\n"
