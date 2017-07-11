@@ -22,4 +22,4 @@ You need the following to run the script.
 The quick brown fox
 
 ## Limitations
-- This script only works for RDS MySQL
+- This script only works for AWS MySQL RDS
