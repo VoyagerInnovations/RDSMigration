@@ -16,6 +16,7 @@ You need the following to run the script.
 
 1. An EC2 instance. This instance must be able to connect to both the source and target RDS
 2. [AWS CLI](https://aws.amazon.com/cli/) installed in the EC2 instance
+3. MySQL client package
 
 ## Using the script
 The quick brown fox
