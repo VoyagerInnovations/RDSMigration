@@ -89,9 +89,7 @@ else
   DB_IOPS="--iops $IOPS"
 fi
 
-
 # Create Read Replica
-
 echo "Creating the read replica..."
 
 aws rds create-db-instance-read-replica --db-instance-identifier $DB_INST_NAME-replica --source-db-instance-identifier $DB_INST_NAME --db-instance-class $DB_INSTANCE_CLASS --port 3306 $DB_PUBLICLY_ACCESSIBLE --storage-type $STORAGE_TYPE --copy-tags-to-snapshot --region $REGION
@@ -120,13 +118,11 @@ fi
 aws rds create-db-instance $DB_NAME_PARAM --db-instance-identifier $DB_INST_NAME-encrypted --allocated-storage $ALLOCATED_STORAGE --db-instance-class $DB_INSTANCE_CLASS --engine MySQL --master-username $DB_ADMIN_USER --master-user-password $DB_ADMIN_PASSWD --vpc-security-group-ids $VPC_SECGRP_ID --db-subnet-group-name $DB_SUBNET_GRP_NAME --db-parameter-group-name $DB_PARAM_GRP_NAME --port 3306 $DB_MULTI_AZ --engine-version $ENGINE_VERSION $DB_IOPS $DB_PUBLICLY_ACCESSIBLE --storage-type $STORAGE_TYPE --storage-encrypted --kms-key-id $KMS_KEY_ID --region $REGION
 
 # Check replication status. If successful, stop replication
-
 check_read_replica_status () {
-
   REPL_DB_INSTANCE_STATUS=`aws rds describe-db-instances --db-instance-identifier $DB_INST_NAME-replica --region $REGION | grep DBInstanceStatus | awk -F':' '{print $2}' | sed 's/[", ]//g'`
   REPL_DB_ENDPT=`aws rds describe-db-instances --db-instance-identifier $DB_INST_NAME-replica --region $REGION | grep Address | awk -F':' '{print $2}' | sed 's/[", ]//g'`
-
 }
+
 check_read_replica_status
 until [ "$REPL_DB_INSTANCE_STATUS" == "available" ]
 do
@@ -151,11 +147,10 @@ then
 
   # Dump and Export Replica DB
   check_encrypted_db_status () {
-
     ENCRYPTED_DB_INSTANCE_STATUS=`aws rds describe-db-instances --db-instance-identifier $DB_INST_NAME-encrypted --region $REGION | grep DBInstanceStatus | awk -F':' '{print $2}' | sed 's/[", ]//g'`
     ENCRYPTED_DB_ENDPT=`aws rds describe-db-instances --db-instance-identifier $DB_INST_NAME-encrypted --region $REGION | grep Address | awk -F':' '{print $2}' | sed 's/[", ]//g'`
-
   }
+
   check_encrypted_db_status
   until [ "$ENCRYPTED_DB_INSTANCE_STATUS" == "available" ]
   do
@@ -174,7 +169,6 @@ then
 
         aws rds add-tags-to-resource --resource-name arn:aws:rds:$REGION:$ACCOUNT_NUM:db:$DB_INST_NAME-replica --tags Key="$TAG_KEY",Value="$TAG_VALUE" --region $REGION
         aws rds add-tags-to-resource --resource-name arn:aws:rds:$REGION:$ACCOUNT_NUM:db:$DB_INST_NAME-encrypted --tags Key="$TAG_KEY",Value="$TAG_VALUE" --region $REGION
-
     done
 
     import_export_database () {
@@ -198,13 +192,11 @@ then
     else
       import_export_database
     fi
-
   fi
 
   # Copy Application Users
   DB_DETAILS_DIR=$POLICY_FILE_DIR/database_details
   mkdir -p $DB_DETAILS_DIR
-
 
   ## Get users from source database
   echo "Getting application users from source database to be loaded to the encrypted database..."
@@ -216,7 +208,6 @@ then
   IFS=$'\n'
   for USER_CREDS in $( cat $DB_DETAILS_DIR/$DB_INST_NAME-user.csv )
   do
-
     USERNAME=`echo $USER_CREDS | awk -F',' '{print $1}'`
     USER_PASSWD=`echo $USER_CREDS | awk -F',' '{print $2}'`
     USER_HOST=`echo $USER_CREDS | awk -F',' '{print $3}'`
@@ -231,21 +222,18 @@ then
     sed -i -e 's/$/;/g' $DB_DETAILS_DIR/$DB_INST_NAME-usergrants.sql
 
     mysql -u$DB_ADMIN_USER -p$DB_ADMIN_PASSWD -h$ENCRYPTED_DB_ENDPT < $DB_DETAILS_DIR/$DB_INST_NAME-usergrants.sql
-
   done
 
   rm -f $DB_DETAILS_DIR/$DB_INST_NAME-usergrants.sql
   rm -f $DB_DETAILS_DIR/$DB_INST_NAME-user.csv
 
   # Create repl_user in Source Database
-
   echo "Creating replica user in source database..."
 
   mysql -u$DB_ADMIN_USER -p$DB_ADMIN_PASSWD -h$SRC_DB_ENDPT -e "CREATE USER 'repl_user'@'%' IDENTIFIED BY '3&pZcHL5hM';"
   mysql -u$DB_ADMIN_USER -p$DB_ADMIN_PASSWD -h$SRC_DB_ENDPT -e "GRANT REPLICATION SLAVE ON *.* TO 'repl_user'@'%' IDENTIFIED BY '3&pZcHL5hM';"
 
   # Setup and Start replication in Destination Encrypted Database
-
   echo "Setting up replication in encrypted database..."
 
   mysql -u$DB_ADMIN_USER -p$DB_ADMIN_PASSWD -h$ENCRYPTED_DB_ENDPT -e "CALL mysql.rds_set_external_master('$SRC_DB_ENDPT','3306','repl_user','3&pZcHL5hM','$RELAY_MASTER_LOG_FILE',$EXEC_MASTER_LOG_POS,0);"
@@ -254,10 +242,8 @@ then
   sleep 5
 
   check_repl_encrypt_db_status () {
-
     CHECK_REPL_STATUS=`mysql -u$DB_ADMIN_USER -p$DB_ADMIN_PASSWD -h$ENCRYPTED_DB_ENDPT -e "SHOW SLAVE STATUS\G" | grep Slave_IO_State | awk -F': ' '{print $2}'`
     CHECK_REPL_ERROR=`mysql -u$DB_ADMIN_USER -p$DB_ADMIN_PASSWD -h$ENCRYPTED_DB_ENDPT -e "SHOW SLAVE STATUS\G" | grep Last_IO_Error: | awk -F':' '{print $2}'`
-
   }
 
   check_repl_encrypt_db_status
@@ -283,6 +269,7 @@ then
       CHECK_SRCDB_RENAME=`aws rds describe-db-instances --region $REGION | grep '"DBInstanceIdentifier":' | grep $DB_INST_NAME-old`
       CHECK_SRCDB_RENAME_STAT=`echo $?`
     }
+
     check_srcdb_rename_status
     until [ $CHECK_SRCDB_RENAME_STAT -eq 0 ]
     do
@@ -292,12 +279,9 @@ then
 
     if [ $CHECK_SRCDB_RENAME_STAT -eq 0 ]
     then
-
       check_rename_srcdb_availability_status () {
-
         CHECK_NEW_NAME=`aws rds describe-db-instances --db-instance-identifier $DB_INST_NAME-old --region $REGION | grep '"DBInstanceIdentifier":' | awk -F': ' '{print $2}' | sed 's/[", ]//g'`
         CHECK_RENAMED_SRCDB_STATUS=`aws rds describe-db-instances --db-instance-identifier $DB_INST_NAME-old --region $REGION | grep DBInstanceStatus | awk -F':' '{print $2}' | sed 's/[", ]//g'`
-
       }
 
       check_rename_srcdb_availability_status
@@ -312,26 +296,24 @@ then
         echo "Will proceed on renaming $DB_INST_NAME-encrypted to $DB_INST_NAME..."
 
         aws rds modify-db-instance --db-instance-identifier $DB_INST_NAME-encrypted --new-db-instance-identifier $DB_INST_NAME --apply-immediately --region $REGION
-
         sleep 180
 
-      check_encryptdb_rename_status () {
+        check_encryptdb_rename_status () {
           echo "Checking the existence of $DB_INST_NAME..."
-        CHECK_ENCRYPTDB_RENAME=`aws rds describe-db-instances --region $REGION | grep '"DBInstanceIdentifier":' | grep $DB_INST_NAME`
-        CHECK_ENCRYPTDB_RENAME_STAT=`echo $?`
-      }
-      check_encryptdb_rename_status
-      until [ $CHECK_ENCRYPTDB_RENAME_STAT -eq 0 ]
-      do
+          CHECK_ENCRYPTDB_RENAME=`aws rds describe-db-instances --region $REGION | grep '"DBInstanceIdentifier":' | grep $DB_INST_NAME`
+          CHECK_ENCRYPTDB_RENAME_STAT=`echo $?`
+        }
+
         check_encryptdb_rename_status
-        sleep 20
-      done
+        until [ $CHECK_ENCRYPTDB_RENAME_STAT -eq 0 ]
+        do
+          check_encryptdb_rename_status
+          sleep 20
+        done
 
         if [ $CHECK_ENCRYPTDB_RENAME_STAT -eq 0 ]
         then
-
           check_rename_encryptdb_availability_status () {
-
             CHECK_RENAMED_ENCRYPTDB_STATUS=`aws rds describe-db-instances --db-instance-identifier $DB_INST_NAME --region $REGION | grep DBInstanceStatus | awk -F':' '{print $2}' | sed 's/[", ]//g'`
           }
 
@@ -343,7 +325,6 @@ then
 
           if [ "$CHECK_RENAMED_ENCRYPTDB_STATUS" == "available" ]
           then
-
             echo "Successfully renamed $DB_INST_NAME-encrypted to $DB_INST_NAME."
 
             # Cut replication in encrypted database
@@ -360,7 +341,6 @@ then
             echo "For now, $DB_INST_NAME-replica will be deleted..."
             aws rds delete-db-instance --db-instance-identifier $DB_INST_NAME-replica --skip-final-snapshot --region $REGION
             echo "DONE."
-
           fi
         else
           check_encryptdb_rename_status
@@ -375,7 +355,6 @@ then
     echo Last_IO_Error: $CHECK_REPL_ERROR
     check_repl_encrypt_db_status
   fi
-
 else
   check_read_replica_status
 fi
