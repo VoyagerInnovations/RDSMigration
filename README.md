@@ -36,15 +36,15 @@ You need the following to run the script.
 Usage: migrate_database_updated.sh [-i <iam_user_name>] [-r <instance_role_name>] [-n <db_instance_identifier>] [-u <db_admin_user>] [-p <db_admin_passwd>] [-m <yes/no> ] [-d <db_name>] [-a <account_number>] [-z <region>]
 
 Options:
-  -i <iam_user_name>            = IAM user who will administer the KMS key to be used in encrypting the database
-  -r <instance_role_name>       = IAM role of the instance that will access the encrypted RDS instance
-  -n <db_instance_identifier>   = (Source) RDS Instance Identifier
-  -u <db_admin_user>            = (Source) RDS DB Admin User
-  -p <db_admin_passwd>          = (Source) RDS DB Admin Password
-  -m <yes/no>                   = Indicate if the RDS instance contains multiple databases
-  -d <db_name>                  = Specify the database name. This option can be excluded/skipped if the value of '-m' is yes
-  -a <account_number>           = Specify the AWS account number where the resources resides
-  -z <region>                   = Specify the AWS Region where the resources resides
+-  -i <iam_user_name>            = IAM user who will administer the KMS key to be used in encrypting the database
+-  -r <instance_role_name>       = IAM role of the instance that will access the encrypted RDS instance
+-  -n <db_instance_identifier>   = (Source) RDS Instance Identifier
+-  -u <db_admin_user>            = (Source) RDS DB Admin User
+-  -p <db_admin_passwd>          = (Source) RDS DB Admin Password
+-  -m <yes/no>                   = Indicate if the RDS instance contains multiple databases
+-  -d <db_name>                  = Specify the database name. This option can be excluded/skipped if the value of '-m' is yes
+-  -a <account_number>           = Specify the AWS account number where the resources resides
+-  -z <region>                   = Specify the AWS Region where the resources resides
 
 ## Limitations
 - This script only works for AWS MySQL RDS
