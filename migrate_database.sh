@@ -6,7 +6,7 @@ POLICY_FILE_NAME=$POLICY_FILE_DIR/rds_kms_policy.json
 INSTANCE_CLASS_LIST=$POLICY_FILE_DIR/instance_types.csv
 
 usage () {
-  printf "\nUsage: migrate_database_updated.sh [-i <iam_user_name>] [-r <instance_role_name>] [-n <db_instance_identifier>] [-u <db_admin_user>] [-p <db_admin_passwd>] [-m <yes/no> ] [-d <db_name>] [-a <account_number>] [-z <region>]\n"
+  printf "\nUsage: migrate_database.sh [-i <iam_user_name>] [-r <instance_role_name>] [-n <db_instance_identifier>] [-u <db_admin_user>] [-p <db_admin_passwd>] [-m <yes/no> ] [-d <db_name>] [-a <account_number>] [-z <region>]\n"
   printf "\nOptions:\n"
   echo "  -i <iam_user_name>            = IAM user who will administer the KMS key to be used in encrypting the database"
   echo "  -r <instance_role_name>       = IAM role of the instance that will access the encrypted RDS instance"
