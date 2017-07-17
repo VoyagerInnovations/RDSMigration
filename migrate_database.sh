@@ -6,7 +6,7 @@ POLICY_FILE_NAME=$POLICY_FILE_DIR/rds_kms_policy.json
 INSTANCE_CLASS_LIST=$POLICY_FILE_DIR/instance_types.csv
 
 usage () {
-  printf "\nUsage: migrate_database.sh [-i <iam_user_name>] [-r <instance_role_name>] [-n <db_instance_identifier>] [-u <db_admin_user>] [-p <db_admin_passwd>] [-m <yes/no> ] [-d <db_name>] [-a <account_number>] [-z <region>]\n"
+  printf "\nUsage: migrate_database.sh [-i <iam_user_name>] [-r <instance_role_name>] [-n <db_instance_identifier>] [-u <db_admin_user>] [-p <db_admin_passwd>] [-m <yes/no> ] [-d <db_name>] [-a <account_number>] [-z <region_name>]\n"
   printf "\nOptions:\n"
   echo "  -i <iam_user_name>            = IAM user who will administer the KMS key to be used in encrypting the database"
   echo "  -r <instance_role_name>       = IAM role of the instance that will access the encrypted RDS instance"
@@ -16,7 +16,7 @@ usage () {
   echo "  -m <yes/no>                   = Indicate if the RDS instance contains multiple databases"
   echo "  -d <db_name>                  = Specify the database name. This option can be excluded/skipped if the value of '-m' is yes"
   echo "  -a <account_number>         	= Specify the AWS account number where the resources resides"
-  echo "  -z <region>           	= Specify the AWS Region where the resources resides"
+  echo "  -z <region_name>           	= Specify the AWS Region where the resources resides"
   printf "\nNote:\nThis script requires that you have the mysql and aws cli tools installed in your server.\nPlease ensure that the security group of source and destination RDS are properly configured before running the script.\n"
 }
 
