@@ -33,7 +33,7 @@ You need the following to run the script.
 3. MySQL client package
 
 ## Using the script
-Usage: migrate_database.sh [-i <iam_user_name>] [-r <instance_role_name>] [-n <db_instance_identifier>] [-u <db_admin_user>] [-p <db_admin_passwd>] [-m <yes/no> ] [-d <db_name>] [-a <account_number>] [-z <region>]
+Usage: migrate_database.sh [-i <iam_user_name>] [-r <instance_role_name>] [-n <db_instance_identifier>] [-u <db_admin_user>] [-p <db_admin_passwd>] [-m <yes/no> ] [-d <db_name>] [-a <account_number>] [-z <region_name>]
 
 Options:
 -  -i <iam_user_name>            = IAM user who will administer the KMS key to be used in encrypting the database
@@ -44,7 +44,7 @@ Options:
 -  -m <yes/no>                   = Indicate if the RDS instance contains multiple databases
 -  -d <db_name>                  = Specify the database name. This option can be excluded/skipped if the value of '-m' is yes
 -  -a <account_number>           = Specify the AWS account number where the resources resides
--  -z <region>                   = Specify the AWS Region where the resources resides
+-  -z <region_name>                   = Specify the AWS Region where the resources resides
 
 Example:
 
