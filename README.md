@@ -33,9 +33,9 @@ You need the following to run the script.
 3. MySQL client package
 
 ## Using the script
-Usage: migrate_database.sh [-i <iam_user_name>] [-r <instance_role_name>] [-n <db_instance_identifier>] [-u <db_admin_user>] [-p <db_admin_passwd>] [-m <yes/no> ] [-d <db_name>] [-a <account_number>] [-z <region_name>]
+'''
+Usage: ./migrate_database.sh [-i <iam_user_name>] [-r <instance_role_name>] [-n <db_instance_identifier>] [-u <db_admin_user>] [-p <db_admin_passwd>] [-m <yes/no> ] [-d <db_name>] [-a <account_number>] [-z <region_name>]
 
-```
 Options:
   -i <iam_user_name>            = IAM user who will administer the KMS key to be used in encrypting the database
   -r <instance_role_name>       = IAM role of the instance that will access the encrypted RDS instance
