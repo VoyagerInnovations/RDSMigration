@@ -30,7 +30,8 @@ You need the following to run the script.
 
 1. An EC2 instance. This instance must be able to connect to both the source and target RDS
 
-  a. IAM Role. The EC2 instance must have an IAM role with the following policies and permissions:
+    a. IAM Role. The EC2 instance must have an IAM role with the following policies and permissions:
+  
     1. AccessToKMS
     ```
     {
