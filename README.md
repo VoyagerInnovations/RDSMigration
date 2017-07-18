@@ -113,10 +113,17 @@ You need the following to run the script.
     }
     ```
 
+
     b. Security Group. Modify the security group of the source and target RDS instance to allow port 3306 from the EC2 replication instance.
 
+    c. [Launch instance](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/launching-instance.html). Once the IAM role and security group is properly configured, proceed on launching the replication instance.
+    
+    
 2. [AWS CLI](https://aws.amazon.com/cli/) installed in the EC2 instance
 3. MySQL client package
+```
+    sudo yum install -y mysql
+```
 
 ## Using the script
 ```
