@@ -41,8 +41,6 @@ You need the following to run the script.
             "Sid": "Stmt1498031627000",
             "Effect": "Allow",
             "Action": [
-                "kms:Decrypt",
-                "kms:Encrypt",
                 "kms:ListAliases",
                 "kms:ListKeys",
                 "kms:CreateKey",
