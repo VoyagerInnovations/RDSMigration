@@ -33,7 +33,7 @@ You need the following to run the script.
 3. MySQL client package
 
 ## Using the script
-'''
+```
 Usage: ./migrate_database.sh [-i <iam_user_name>] [-r <instance_role_name>] [-n <db_instance_identifier>] [-u <db_admin_user>] [-p <db_admin_passwd>] [-m <yes/no> ] [-d <db_name>] [-a <account_number>] [-z <region_name>]
 
 Options:
