@@ -29,6 +29,88 @@ In detail, the following are the operations that will be performed:
 You need the following to run the script.
 
 1. An EC2 instance. This instance must be able to connect to both the source and target RDS
+  a. IAM Role. The EC2 instance must have an IAM role with the following policies and permissions:
+    1. AccessToKMS
+    ```
+    {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "Stmt1498031627000",
+            "Effect": "Allow",
+            "Action": [
+                "kms:Decrypt",
+                "kms:Encrypt",
+                "kms:ListAliases",
+                "kms:ListKeys",
+                "kms:CreateKey",
+                "kms:CreateAlias",
+                "kms:Describe*"
+            ],
+            "Resource": [
+                "*"
+            ]
+        }
+     ]
+   }
+   ```
+    2. AccessToRDS 
+    ```
+    {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "Stmt1498038607000",
+            "Effect": "Allow",
+            "Action": [
+                "rds:DescribeDBClusters",
+                "rds:DescribeDBInstances"
+            ],
+            "Resource": [
+                "*"
+            ]
+        },
+        {
+            "Sid": "Stmt1498038692000",
+            "Effect": "Allow",
+            "Action": [
+                "rds:CreateDBInstanceReadReplica",
+                "rds:Describe*",
+                "rds:CreateDBInstance",
+                "rds:ModifyDBInstance",
+                "rds:DeleteDBInstance",
+                "rds:AddTagsToResource",
+                "rds:ListTagsForResource"
+            ],
+            "Resource": [
+                "*"
+            ]
+        }
+      ]
+    }
+    ```
+    3. AccessToIAM
+    ```
+    {
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "Stmt1499865345000",
+            "Effect": "Allow",
+            "Action": [
+                "iam:ListPolicies",
+                "iam:ListRoles",
+                "iam:ListRolePolicies",
+                "iam:GetRolePolicy"
+            ],
+            "Resource": [
+                "*"
+            ]
+        }
+      ]
+    }
+    ```
+
 2. [AWS CLI](https://aws.amazon.com/cli/) installed in the EC2 instance
 3. MySQL client package
 
