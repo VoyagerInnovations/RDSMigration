@@ -4,9 +4,10 @@ TODAY=`date +%Y%m%d`
 POLICY_FILE_DIR=/home/ec2-user/RDSMigration
 POLICY_FILE_NAME=$POLICY_FILE_DIR/rds_kms_policy.json
 INSTANCE_CLASS_LIST=$POLICY_FILE_DIR/instance_types.csv
+INSTANCE_ROLE_LIST=$POLICY_FILE_DIR/repl_instance_roles.txt
 
 usage () {
-  printf "\nUsage: migrate_database.sh [-i <iam_user_name>] [-r <instance_role_name>] [-n <db_instance_identifier>] [-u <db_admin_user>] [-p <db_admin_passwd>] [-m <yes/no> ] [-d <db_name>] [-a <account_number>] [-z <region_name>]\n"
+  printf "\nUsage: migrate_database_updated.sh [-i <iam_user_name>] [-r <instance_role_name>] [-n <db_instance_identifier>] [-u <db_admin_user>] [-p <db_admin_passwd>] [-m <yes/no> ] [-d <db_name>] [-a <account_number>] [-z <region>]\n"
   printf "\nOptions:\n"
   echo "  -i <iam_user_name>            = IAM user who will administer the KMS key to be used in encrypting the database"
   echo "  -r <instance_role_name>       = IAM role of the instance that will access the encrypted RDS instance"
@@ -16,11 +17,11 @@ usage () {
   echo "  -m <yes/no>                   = Indicate if the RDS instance contains multiple databases"
   echo "  -d <db_name>                  = Specify the database name. This option can be excluded/skipped if the value of '-m' is yes"
   echo "  -a <account_number>         	= Specify the AWS account number where the resources resides"
-  echo "  -z <region_name>           	= Specify the AWS Region where the resources resides"
+  echo "  -z <region>           	= Specify the AWS Region where the resources resides"
   printf "\nNote:\nThis script requires that you have the mysql and aws cli tools installed in your server.\nPlease ensure that the security group of source and destination RDS are properly configured before running the script.\n"
 }
 
-while getopts i:r:n:u:p:m:d:s:t:a:z:h option
+while getopts i:r:n:u:p:m:d:a:z:h option
 do
  case "${option}"
  in
@@ -31,8 +32,6 @@ do
    p) DB_ADMIN_PASSWD=${OPTARG};;
    m) DB_MULTIPLE_OPTION=${OPTARG};;
    d) DB_NAME=${OPTARG};;
-   s) DB_INST_CLASS_SUPPORT_OPTION=${OPTARG};;
-   t) DB_INSTANCE_CLASS_INPUT=${OPTARG};;
    a) ACCOUNT_NUM=${OPTARG};;
    z) REGION=${OPTARG};;
    h) usage
@@ -41,16 +40,35 @@ do
  esac
 done
 
-if [ "$DB_MULTIPLE_OPTION" == "no" ]
-then
-  DB_NAME_PARAM="--db-name $DB_NAME"
-else
-  DB_NAME_PARAM=""
-fi
 
 # Flight Check
 
 ## Check IAM roles and permissions
+REPL_INSTANCE_ROLE=`curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/`
+LIST_ROLE_POLICIES=`aws iam  list-role-policies --role-name $REPL_INSTANCE_ROLE | sed -e 's/[{", }\n]//g' | sed '/^$/d' | sed '1d; $d'`
+
+IFS=$'\n'
+for ROLE_POLICY in ${LIST_ROLE_POLICIES[@]}
+do
+  aws iam get-role-policy --role-name $REPL_INSTANCE_ROLE --policy-name $ROLE_POLICY >> $INSTANCE_ROLE_LIST
+done
+
+REQ_PERMISSION=( 'kms:ListAliases' 'kms:ListKeys' 'kms:CreateKey' 'kms:CreateAlias' 'kms:Describe' 'rds:DescribeDBInstances' 'rds:CreateDBInstanceReadReplica' 'rds:CreateDBInstance' 'rds:ModifyDBInstance' 'rds:DeleteDBInstance' 'rds:AddTagsToResource' 'rds:ListTagsForResource' 'iam:ListPolicies' 'iam:ListRoles' 'iam:ListRolePolicies' 'iam:GetRolePolicy' )
+
+for RULE in ${REQ_PERMISSION[@]}
+do
+  FIND_RULE=`less $INSTANCE_ROLE_LIST | grep $RULE`
+  FIND_RULE_STAT=`echo $?`
+
+  if [ $FIND_RULE_STAT -eq 1 ]
+  then
+    echo "There's a missing IAM permission. Please refer to https://github.com/VoyagerInnovations/RDSMigration/blob/master/README.md for the list of required IAM permission."
+    exit
+  fi
+done
+
+echo "The replication instance has the required IAM permissions to proceed."
+rm $INSTANCE_ROLE_LIST
 
 ## Check Packages
 CHECK_AWSCLI=`rpm -qa | grep aws-cli`
@@ -139,14 +157,14 @@ echo "Creating KMS Key..."
 sed "s/IAM_USER_NAME/$IAM_USER_NAME/g" $POLICY_FILE_NAME > $POLICY_FILE_DIR/rds_kms_$DB_INST_NAME.json
 sed -i -e "s/INSTANCE_ROLE_NAME/$INSTANCE_ROLE_NAME/g" $POLICY_FILE_DIR/rds_kms_$DB_INST_NAME.json
 
-KMS_KEY_ID=`aws kms create-key --description $DB_INST_NAME --key-usage ENCRYPT_DECRYPT --bypass-policy-lockout-safety-check --region $REGION --policy file://rds_kms_$DB_INST_NAME.json | grep KeyId | awk -F': ' '{print $2}' | sed 's/[",]//g'`
+KMS_KEY_ID=`aws kms create-key --description $DB_INST_NAME --key-usage ENCRYPT_DECRYPT --bypass-policy-lockout-safety-check --region $REGION --policy file://rds_kms_$DB_INST_NAME.json | grep KeyId | awk -F': ' '{print $2}' | sed 's/[", ]//g'`
 KMS_KEY_STAT=`echo $?`
 
 if [ $KMS_KEY_STAT -eq 0 ]
 then
   echo "Successfully created KMS key $KMS_KEY_ID."
   sleep 5
-  CREATE_KMS_ALIAS=`aws kms create-alias --alias-name alias/$DB_INST_NAME --target-key-id $KMS_KEY_ID --region $REGION`
+  CREATE_KMS_ALIAS=`aws kms create-alias --alias-name alias/$DB_INST_NAME --target-key-id arn:aws:kms:$REGION:$ACCOUNT_NUM:key/$KMS_KEY_ID --region $REGION`
   CREATE_KMS_ALIAS_STAT=`echo $?`
 
   if [ $CREATE_KMS_ALIAS_STAT -eq 0 ]
@@ -165,12 +183,13 @@ fi
 # Create an Encrypted Database
 echo "Creating encrypted database..."
 
-#if [ "$DB_INST_CLASS_SUPPORT_OPTION" == "no" ]
-#then
-#  DB_INSTANCE_CLASS=$DB_INSTANCE_CLASS_INPUT
-#fi
+if [ "$DB_MULTIPLE_OPTION" == "no" ]
+then
+  CREATE_DB_ENCRYPTED=`aws rds create-db-instance --db-name $DB_NAME --db-instance-identifier $DB_INST_NAME-encrypted --allocated-storage $ALLOCATED_STORAGE --db-instance-class $DB_INSTANCE_CLASS --engine MySQL --master-username $DB_ADMIN_USER --master-user-password $DB_ADMIN_PASSWD --vpc-security-group-ids $VPC_SECGRP_ID --db-subnet-group-name $DB_SUBNET_GRP_NAME --db-parameter-group-name $DB_PARAM_GRP_NAME --port 3306 $DB_MULTI_AZ --engine-version $ENGINE_VERSION $DB_IOPS $DB_PUBLICLY_ACCESSIBLE --storage-type $STORAGE_TYPE --storage-encrypted --kms-key-id $KMS_KEY_ID --region $REGION`
+else
+  CREATE_DB_ENCRYPTED=`aws rds create-db-instance --db-instance-identifier $DB_INST_NAME-encrypted --allocated-storage $ALLOCATED_STORAGE --db-instance-class $DB_INSTANCE_CLASS --engine MySQL --master-username $DB_ADMIN_USER --master-user-password $DB_ADMIN_PASSWD --vpc-security-group-ids $VPC_SECGRP_ID --db-subnet-group-name $DB_SUBNET_GRP_NAME --db-parameter-group-name $DB_PARAM_GRP_NAME --port 3306 $DB_MULTI_AZ --engine-version $ENGINE_VERSION $DB_IOPS $DB_PUBLICLY_ACCESSIBLE --storage-type $STORAGE_TYPE --storage-encrypted --kms-key-id $KMS_KEY_ID --region $REGION`
+fi
 
-CREATE_DB_ENCRYPTED=`aws rds create-db-instance $DB_NAME_PARAM --db-instance-identifier $DB_INST_NAME-encrypted --allocated-storage $ALLOCATED_STORAGE --db-instance-class $DB_INSTANCE_CLASS --engine MySQL --master-username $DB_ADMIN_USER --master-user-password $DB_ADMIN_PASSWD --vpc-security-group-ids $VPC_SECGRP_ID --db-subnet-group-name $DB_SUBNET_GRP_NAME --db-parameter-group-name $DB_PARAM_GRP_NAME --port 3306 $DB_MULTI_AZ --engine-version $ENGINE_VERSION $DB_IOPS $DB_PUBLICLY_ACCESSIBLE --storage-type $STORAGE_TYPE --storage-encrypted --kms-key-id $KMS_KEY_ID --region $REGION`
 CREATE_DB_ENCRYPTED_STAT=`echo $?`
 
 if [ $CREATE_DB_ENCRYPTED_STAT -eq 0 ]
