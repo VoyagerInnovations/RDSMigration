@@ -45,7 +45,7 @@ Options:
   -m <yes/no>                   = Indicate if the RDS instance contains multiple databases
   -d <db_name>                  = Specify the database name. This option can be excluded/skipped if the value of '-m' is yes
   -a <account_number>           = Specify the AWS account number where the resources resides
-  -z <region_name>                   = Specify the AWS Region where the resources resides
+  -z <region_name>              = Specify the AWS Region where the resources resides
 ```
 
 Example:
