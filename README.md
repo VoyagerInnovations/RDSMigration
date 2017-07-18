@@ -49,7 +49,9 @@ Options:
 Example:
 
 1. For RDS with single database:
- ./migrate_database.sh -i test_user -r EC2TestRole -n TestDB -u admin -p admin1234 -m no -d testdb -a 123456789012 -z ap-southeast-1
+```bash
+./migrate_database.sh -i test_user -r EC2TestRole -n TestDB -u admin -p admin1234 -m no -d testdb -a 123456789012 -z ap-southeast-1
+```
 
 2. For RDS with multiple databases:
  ./migrate_database.sh -i test_user -r EC2TestRole -n TestDB -u admin -p admin1234 -m yes -a 123456789012 -z ap-southeast-1
