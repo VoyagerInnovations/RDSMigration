@@ -30,8 +30,17 @@ You need the following to run the script.
 
 1. An EC2 instance. This instance must be able to connect to both the source and target RDS
 
-    a. IAM Role. The EC2 instance must have an IAM role with the following policies and permissions:
-  
+    a. IAM Role. Create an IAM role for the EC2 instance with the following inline policies and permissions.
+ 
+    Role Name: EC2RoleDBReplication
+    
+    Role Inline Policy Name: 
+    ```
+     AccessToKMS
+     AccessToRDS
+     AccessToIAM
+     ```
+    
     1. AccessToKMS
     ```
     {
