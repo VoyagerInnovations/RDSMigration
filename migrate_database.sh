@@ -81,7 +81,7 @@ if [ $CHECK_AWSCLI_STAT -eq 0 -a $CHECK_MYSQL_STAT -eq 0 -a $CHECK_PV_STAT -eq 0
 then
  echo "Packages required are already installed. Okay to proceed..."
 else
- echo "Please install the required packages: mysql and aws-cli."
+ echo "Please install the required packages: mysql, aws-cli and pv."
  exit
 fi
 
