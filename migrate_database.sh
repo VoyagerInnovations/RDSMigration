@@ -40,7 +40,6 @@ do
  esac
 done
 
-
 # Flight Check
 
 ## Check IAM roles and permissions
@@ -185,9 +184,9 @@ echo "Creating encrypted database..."
 
 if [ "$DB_MULTIPLE_OPTION" == "no" ]
 then
-  CREATE_DB_ENCRYPTED=`aws rds create-db-instance --db-name $DB_NAME --db-instance-identifier $DB_INST_NAME-encrypted --allocated-storage $ALLOCATED_STORAGE --db-instance-class $DB_INSTANCE_CLASS --engine MySQL --master-username $DB_ADMIN_USER --master-user-password $DB_ADMIN_PASSWD --vpc-security-group-ids $VPC_SECGRP_ID --db-subnet-group-name $DB_SUBNET_GRP_NAME --db-parameter-group-name $DB_PARAM_GRP_NAME --port 3306 $DB_MULTI_AZ --engine-version $ENGINE_VERSION $DB_IOPS $DB_PUBLICLY_ACCESSIBLE --storage-type $STORAGE_TYPE --storage-encrypted --kms-key-id $KMS_KEY_ID --region $REGION`
+  CREATE_DB_ENCRYPTED=`aws rds create-db-instance --db-name $DB_NAME --db-instance-identifier $DB_INST_NAME-encrypted --allocated-storage $ALLOCATED_STORAGE --db-instance-class $DB_INSTANCE_CLASS --engine MySQL --master-username $DB_ADMIN_USER --master-user-password $DB_ADMIN_PASSWD --vpc-security-group-ids $VPC_SECGRP_ID --db-subnet-group-name $DB_SUBNET_GRP_NAME --db-parameter-group-name $DB_PARAM_GRP_NAME --port 3306 $DB_MULTI_AZ --engine-version $ENGINE_VERSION $DB_IOPS $DB_PUBLICLY_ACCESSIBLE --storage-type $STORAGE_TYPE --storage-encrypted --kms-key-id arn:aws:kms:$REGION:$ACCOUNT_NUM:key/$KMS_KEY_ID --region $REGION`
 else
-  CREATE_DB_ENCRYPTED=`aws rds create-db-instance --db-instance-identifier $DB_INST_NAME-encrypted --allocated-storage $ALLOCATED_STORAGE --db-instance-class $DB_INSTANCE_CLASS --engine MySQL --master-username $DB_ADMIN_USER --master-user-password $DB_ADMIN_PASSWD --vpc-security-group-ids $VPC_SECGRP_ID --db-subnet-group-name $DB_SUBNET_GRP_NAME --db-parameter-group-name $DB_PARAM_GRP_NAME --port 3306 $DB_MULTI_AZ --engine-version $ENGINE_VERSION $DB_IOPS $DB_PUBLICLY_ACCESSIBLE --storage-type $STORAGE_TYPE --storage-encrypted --kms-key-id $KMS_KEY_ID --region $REGION`
+  CREATE_DB_ENCRYPTED=`aws rds create-db-instance --db-instance-identifier $DB_INST_NAME-encrypted --allocated-storage $ALLOCATED_STORAGE --db-instance-class $DB_INSTANCE_CLASS --engine MySQL --master-username $DB_ADMIN_USER --master-user-password $DB_ADMIN_PASSWD --vpc-security-group-ids $VPC_SECGRP_ID --db-subnet-group-name $DB_SUBNET_GRP_NAME --db-parameter-group-name $DB_PARAM_GRP_NAME --port 3306 $DB_MULTI_AZ --engine-version $ENGINE_VERSION $DB_IOPS $DB_PUBLICLY_ACCESSIBLE --storage-type $STORAGE_TYPE --storage-encrypted --kms-key-id arn:aws:kms:$REGION:$ACCOUNT_NUM:key/$KMS_KEY_ID --region $REGION`
 fi
 
 CREATE_DB_ENCRYPTED_STAT=`echo $?`
