@@ -74,8 +74,10 @@ CHECK_AWSCLI=`rpm -qa | grep aws-cli`
 CHECK_AWSCLI_STAT=`echo $?`
 CHECK_MYSQL=`rpm -qa | grep mysql`
 CHECK_MYSQL_STAT=`echo $?`
+CHECK_PV=`rpm -qa | grep pv`
+CHECK_PV_STAT=`echo $?`
 
-if [ $CHECK_AWSCLI_STAT -eq 0 -a $CHECK_MYSQL_STAT -eq 0 ]
+if [ $CHECK_AWSCLI_STAT -eq 0 -a $CHECK_MYSQL_STAT -eq 0 -a $CHECK_PV_STAT -eq 0 ]
 then
  echo "Packages required are already installed. Okay to proceed..."
 else
