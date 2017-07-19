@@ -123,7 +123,7 @@ You need the following to run the script.
 
     b. Security Group. Modify the security group of the source and target RDS instance to allow port 3306 from the EC2 replication instance.
 
-    c. [Launch instance](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/launching-instance.html). Once the IAM role and security group is properly configured, proceed on launching the replication instance.
+    c. [Launch instance](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/launching-instance.html). In creating an instance for replication, attach the IAM role and security group created.
     
     
 2. [AWS CLI](https://aws.amazon.com/cli/) installed in the EC2 instance
@@ -174,3 +174,4 @@ Example:
 2. Stop the old RDS instance
 3. Check application user experience
 4. Delete the old RDS instance 
+5. For RDS instances with existing read replica before migration, re-create the read replica to be able to catch up to the master.
