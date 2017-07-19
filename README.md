@@ -131,6 +131,10 @@ You need the following to run the script.
 ```
     sudo yum install -y mysql
 ```
+4. pv tool which monitor the progress of data through a pipe
+```
+    sudo yum install -y pv
+```
 
 ## Using the script
 1. Clone (or download) the repository
