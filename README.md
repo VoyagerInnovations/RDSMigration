@@ -124,7 +124,7 @@ You need the following to run the script.
 ```
 
 ## Using the script
-1. Clone the repository
+1. Clone (or download) the repository
 ```
 cd /home/ec2-user/
 git clone https://github.com/VoyagerInnovations/RDSMigration.git
