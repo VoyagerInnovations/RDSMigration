@@ -121,7 +121,7 @@ You need the following to run the script.
     ```
 
 
-    b. Security Group. Modify the security group of the source and target RDS instance to allow port 3306 from the EC2 replication instance.
+    b. Security Group. Modify the security group of the source and target RDS instance to allow port 3306 from the EC2 replication instance. Also, make sure that the target RDS can connect to port 3306 of the source RDS.
 
     c. [Launch instance](http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/launching-instance.html). In creating an instance for replication, attach the IAM role and security group created.
     
