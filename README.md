@@ -145,11 +145,10 @@ git clone https://github.com/VoyagerInnovations/RDSMigration.git
 
 2. Run the script
 ```
-Usage: ./migrate_database.sh [-i <iam_user_name>] [-r <instance_role_name>] [-n <db_instance_identifier>] [-u <db_admin_user>] [-p <db_admin_passwd>] [-m <yes/no> ] [-d <db_name>] [-a <account_number>] [-z <region_name>]
+Usage: ./migrate_database.sh [-i <iam_user_name>] [-n <db_instance_identifier>] [-u <db_admin_user>] [-p <db_admin_passwd>] [-m <yes/no> ] [-d <db_name>] [-a <account_number>] [-z <region_name>]
 
 Options:
   -i <iam_user_name>            = IAM user who will administer the KMS key to be used in encrypting the database
-  -r <instance_role_name>       = IAM role of the instance that will access the encrypted RDS instance
   -n <db_instance_identifier>   = (Source) RDS Instance Identifier
   -u <db_admin_user>            = (Source) RDS DB Admin User
   -p <db_admin_passwd>          = (Source) RDS DB Admin Password
@@ -163,11 +162,11 @@ Example:
 
 1. For RDS with single database:
 ```bash
-./migrate_database.sh -i test_user -r EC2TestRole -n TestDB -u admin -p admin1234 -m no -d testdb -a 123456789012 -z ap-southeast-1
+./migrate_database.sh -i test_user -n TestDB -u admin -p admin1234 -m no -d testdb -a 123456789012 -z ap-southeast-1
 ```
 2. For RDS with multiple databases:
 ```bash
-./migrate_database.sh -i test_user -r EC2TestRole -n TestDB -u admin -p admin1234 -m yes -a 123456789012 -z ap-southeast-1
+./migrate_database.sh -i test_user -n TestDB -u admin -p admin1234 -m yes -a 123456789012 -z ap-southeast-1
 ```
 
 ## Limitations
