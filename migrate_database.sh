@@ -7,10 +7,9 @@ INSTANCE_CLASS_LIST=$POLICY_FILE_DIR/instance_types.csv
 INSTANCE_ROLE_LIST=$POLICY_FILE_DIR/repl_instance_roles.txt
 
 usage () {
-  printf "\nUsage: migrate_database_updated.sh [-i <iam_user_name>] [-r <instance_role_name>] [-n <db_instance_identifier>] [-u <db_admin_user>] [-p <db_admin_passwd>] [-m <yes/no> ] [-d <db_name>] [-a <account_number>] [-z <region>]\n"
+  printf "\nUsage: migrate_database_updated.sh [-i <iam_user_name>] [-n <db_instance_identifier>] [-u <db_admin_user>] [-p <db_admin_passwd>] [-m <yes/no> ] [-d <db_name>] [-a <account_number>] [-z <region>]\n"
   printf "\nOptions:\n"
   echo "  -i <iam_user_name>            = IAM user who will administer the KMS key to be used in encrypting the database"
-  echo "  -r <instance_role_name>       = IAM role of the instance that will access the encrypted RDS instance"
   echo "  -n <db_instance_identifier>   = (Source) RDS Instance Identifier"
   echo "  -u <db_admin_user>            = (Source) RDS DB Admin User"
   echo "  -p <db_admin_passwd>          = (Source) RDS DB Admin Password"
@@ -21,12 +20,11 @@ usage () {
   printf "\nNote:\nThis script requires that you have the mysql and aws cli tools installed in your server.\nPlease ensure that the security group of source and destination RDS are properly configured before running the script.\n"
 }
 
-while getopts i:r:n:u:p:m:d:a:z:h option
+while getopts i:n:u:p:m:d:a:z:h option
 do
  case "${option}"
  in
    i) IAM_USER_NAME=${OPTARG};;
-   r) INSTANCE_ROLE_NAME=${OPTARG};;
    n) DB_INST_NAME=${OPTARG};;
    u) DB_ADMIN_USER=${OPTARG};;
    p) DB_ADMIN_PASSWD=${OPTARG};;
@@ -44,7 +42,7 @@ done
 
 ## Check IAM roles and permissions
 REPL_INSTANCE_ROLE=`curl -s http://169.254.169.254/latest/meta-data/iam/security-credentials/`
-LIST_ROLE_POLICIES=`aws iam  list-role-policies --role-name $REPL_INSTANCE_ROLE | sed -e 's/[{", }\n]//g' | sed '/^$/d' | sed '1d; $d'`
+LIST_ROLE_POLICIES=`aws iam list-role-policies --role-name $REPL_INSTANCE_ROLE | sed -e 's/[{", }\n]//g' | sed '/^$/d' | sed '1d; $d'`
 
 IFS=$'\n'
 for ROLE_POLICY in ${LIST_ROLE_POLICIES[@]}
@@ -134,7 +132,7 @@ then
 else
   printf "The Source Database's instance class doesn't support encryption.\nKindly see the link for the list of instance type that supports encryption: http://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/Overview.Encryption.html\n"
   echo "To proceed, please input the desired instance class:"
-  read NEW_INSTANCE_CLASS 
+  read NEW_INSTANCE_CLASS
   DB_INSTANCE_CLASS=$NEW_INSTANCE_CLASS
 fi
 
@@ -152,11 +150,11 @@ else
   exit
 fi
 
-# Create KMS Key
+## Create KMS Key
 echo "Creating KMS Key..."
 
 sed "s/IAM_USER_NAME/$IAM_USER_NAME/g" $POLICY_FILE_NAME > $POLICY_FILE_DIR/rds_kms_$DB_INST_NAME.json
-sed -i -e "s/INSTANCE_ROLE_NAME/$INSTANCE_ROLE_NAME/g" $POLICY_FILE_DIR/rds_kms_$DB_INST_NAME.json
+sed -i -e "s/INSTANCE_ROLE_NAME/$REPL_INSTANCE_ROLE/g" $POLICY_FILE_DIR/rds_kms_$DB_INST_NAME.json
 
 KMS_KEY_ID=`aws kms create-key --description $DB_INST_NAME --key-usage ENCRYPT_DECRYPT --bypass-policy-lockout-safety-check --region $REGION --policy file://rds_kms_$DB_INST_NAME.json | grep KeyId | awk -F': ' '{print $2}' | sed 's/[", ]//g'`
 KMS_KEY_STAT=`echo $?`
@@ -180,7 +178,7 @@ else
   echo "Failed to create the KMS Key."
   exit
 fi
-  
+
 # Create an Encrypted Database
 echo "Creating encrypted database..."
 
@@ -195,7 +193,7 @@ CREATE_DB_ENCRYPTED_STAT=`echo $?`
 
 if [ $CREATE_DB_ENCRYPTED_STAT -eq 0 ]
 then
-  echo "Successfully created Encrypted Database $DB_INST_NAME-encrypted." 
+  echo "Successfully created Encrypted Database $DB_INST_NAME-encrypted."
 else
   echo "Failed to create the encrypted database."
   exit
@@ -275,15 +273,53 @@ then
     import_export_database () {
       echo "Executing DB Dump from Replica DB and DB Export to Encrypted DB $DB_NAME..."
       sleep 10
-      MIGRATE_DBS=`time mysqldump -u$DB_ADMIN_USER -p$DB_ADMIN_PASSWD -h$REPL_DB_ENDPT --verbose --single-transaction --quick --compress --databases $DB_NAME | pv -pterabc -N inbound | dd obs=16384K | dd obs=16384K | dd obs=16384K | dd obs=16384K | pv -pterabc -N outbound | mysql -u$DB_ADMIN_USER -p$DB_ADMIN_PASSWD -h$ENCRYPTED_DB_ENDPT --compress`
-      MIGRATE_DBS_STAT=`echo $?`
+      CHECK_DB_VIEWS=`mysql -u$DB_ADMIN_USER -p$DB_ADMIN_PASSWD -h$REPL_DB_ENDPT information_schema -e "select count(*) from tables where TABLE_TYPE = 'VIEW' and TABLE_SCHEMA = '$DB_NAME'\G" | awk -F': ' '{print $2}' | sed '/^$/d'`
 
-      if [ $MIGRATE_DBS_STAT -eq 0 ]
+      if [ "$CHECK_DB_VIEWS" == 0 ]
       then
-        echo "Successfully migrated the database." 
+        echo "No views found."
+        MIGRATE_DBS=`time mysqldump -u$DB_ADMIN_USER -p$DB_ADMIN_PASSWD -h$REPL_DB_ENDPT --verbose --single-transaction --quick --compress --databases $DB_NAME | pv -pterabc -N inbound | dd obs=16384K | dd obs=16384K | dd obs=16384K | dd obs=16384K | pv -pterabc -N outbound | mysql -u$DB_ADMIN_USER -p$DB_ADMIN_PASSWD -h$ENCRYPTED_DB_ENDPT --compress`
+        MIGRATE_DBS_STAT=`echo $?`
+      	if [ $MIGRATE_DBS_STAT -eq 0 ]
+      	then
+      	  echo "Successfully migrated the database."
+      	else
+      	  echo "Failed to migrate the database."
+      	  exit
+      	fi
       else
-        echo "Failed to migrate the database."
-	exit
+	echo "Found views."
+        MIGRATE_DBS_WITH_VIEW=`time mysqldump -u$DB_ADMIN_USER -p$DB_ADMIN_PASSWD -h$REPL_DB_ENDPT --verbose --single-transaction --quick --compress --databases $DB_NAME > $POLICY_FILE_DIR/$DB_NAME-dump_view.sql`
+	MIGRATE_DBS_WITH_VIEW_STAT=`echo $?`
+	if [ $MIGRATE_DBS_WITH_VIEW_STAT -eq 0 ]
+	then
+	  UPDATE_DEFINER=$(sed -i -e 's/DEFINER=`.*`/DEFINER=`'$DB_ADMIN_USER'`@`%`/g' $POLICY_FILE_DIR/$DB_NAME-dump_view.sql)
+	  UPDATE_DEFINER_STAT=`echo $?`
+
+	  if [ $UPDATE_DEFINER_STAT -eq 0 ]
+	  then
+	    echo "Successfully updated the DEFINER for the views. Will proceed on exporting the database to the encrypted instance."
+	    RESTORE_VIEW=`mysql -u$DB_ADMIN_USER -p$DB_ADMIN_PASSWD -h$ENCRYPTED_DB_ENDPT $DB_NAME < $POLICY_FILE_DIR/$DB_NAME-dump_view.sql`
+	    RESTORE_VIEW_STAT=`echo $?`
+
+	    if [ $RESTORE_VIEW_STAT -eq 0 ]
+	    then
+	      echo "Successfully migrated database with views."
+	      rm -f $POLICY_FILE_DIR/$DB_NAME-dump_view.sql
+	    else
+	      echo "Failed to migrate database with views."
+	      exit
+	    fi
+	   else
+	     echo "Failed to update the DEFINER."
+	     exit
+	   fi
+
+	else
+	  echo "Failed to dump database with views."
+	  exit
+	fi
+
       fi
     }
 
@@ -429,7 +465,7 @@ then
     fi
 
     # check if the new name took effect
-    sleep 180
+    sleep 240
     check_srcdb_rename_status () {
       echo "Checking the existence of $DB_INST_NAME-old..."
       CHECK_SRCDB_RENAME=`aws rds describe-db-instances --region $REGION | grep '"DBInstanceIdentifier":' | grep $DB_INST_NAME-old`
@@ -440,7 +476,7 @@ then
     until [ $CHECK_SRCDB_RENAME_STAT -eq 0 ]
     do
       check_srcdb_rename_status
-      sleep 60
+      sleep 90
     done
 
     if [ $CHECK_SRCDB_RENAME_STAT -eq 0 ]
@@ -448,6 +484,7 @@ then
       check_rename_srcdb_availability_status () {
         CHECK_NEW_NAME=`aws rds describe-db-instances --db-instance-identifier $DB_INST_NAME-old --region $REGION | grep '"DBInstanceIdentifier":' | awk -F': ' '{print $2}' | sed 's/[", ]//g'`
         CHECK_RENAMED_SRCDB_STATUS=`aws rds describe-db-instances --db-instance-identifier $DB_INST_NAME-old --region $REGION | grep DBInstanceStatus | awk -F':' '{print $2}' | sed 's/[", ]//g'`
+      	RENAMED_SRCDB_ENDPT=`aws rds describe-db-instances --db-instance-identifier $DB_INST_NAME-old --region $REGION | grep Address | awk -F':' '{print $2}' | sed 's/[", ]//g'`
       }
 
       check_rename_srcdb_availability_status
@@ -484,7 +521,7 @@ then
         until [ $CHECK_ENCRYPTDB_RENAME_STAT -eq 0 ]
         do
           check_encryptdb_rename_status
-          sleep 20
+          sleep 90
         done
 
         if [ $CHECK_ENCRYPTDB_RENAME_STAT -eq 0 ]
@@ -517,15 +554,17 @@ then
 	      echo "Successfully stopped replication and reset replication setup."
 	    else
 	      echo "Failed to stop replication and reset replication setup."
-	      exit 0
+	      exit
 	    fi
 
 	    # Delete repl_user
 	    echo "Deleting repl_user..."
-  	    DELETE_REPL_USER=`mysql -u$DB_ADMIN_USER -p$DB_ADMIN_PASSWD -h$SRC_DB_ENDPT -e "DROP USER 'repl_user'@'%';"`
-	    DELETE_REPL_USER_STAT=`echo $?`
+  	    DELETE_REPL_USER_ORIG_DB=`mysql -u$DB_ADMIN_USER -p$DB_ADMIN_PASSWD -h$RENAMED_SRCDB_ENDPT -e "DROP USER 'repl_user'@'%';"`
+	    DELETE_REPL_USER_ORIG_DB_STAT=`echo $?`
+  	    DELETE_REPL_USER_ENC_DB=`mysql -u$DB_ADMIN_USER -p$DB_ADMIN_PASSWD -h$SRC_DB_ENDPT -e "DROP USER 'repl_user'@'%';"`
+	    DELETE_REPL_USER_ENC_DB_STAT=`echo $?`
 
-	    if [ $DELETE_REPL_USER_STAT -eq 0 ]
+	    if [ $DELETE_REPL_USER_ORIG_DB_STAT -eq 0 -a $DELETE_REPL_USER_ENC_DB_STAT -eq 0 ]
 	    then
 	      echo "Successfully deleted the replica user."
 	    else
