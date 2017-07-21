@@ -243,7 +243,6 @@ then
     exit
   fi
 
-
   # Dump and Export Replica DB
   check_encrypted_db_status () {
     ENCRYPTED_DB_INSTANCE_STATUS=`aws rds describe-db-instances --db-instance-identifier $DB_INST_NAME-encrypted --region $REGION | grep DBInstanceStatus | awk -F':' '{print $2}' | sed 's/[", ]//g'`
@@ -310,6 +309,7 @@ then
 	      echo "Failed to migrate database with views."
 	      exit
 	    fi
+
 	   else
 	     echo "Failed to update the DEFINER."
 	     exit
