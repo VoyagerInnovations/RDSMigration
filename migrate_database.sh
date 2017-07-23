@@ -476,7 +476,7 @@ then
     until [ $CHECK_SRCDB_RENAME_STAT -eq 0 ]
     do
       check_srcdb_rename_status
-      sleep 90
+      sleep 120
     done
 
     if [ $CHECK_SRCDB_RENAME_STAT -eq 0 ]
@@ -521,7 +521,7 @@ then
         until [ $CHECK_ENCRYPTDB_RENAME_STAT -eq 0 ]
         do
           check_encryptdb_rename_status
-          sleep 90
+          sleep 120
         done
 
         if [ $CHECK_ENCRYPTDB_RENAME_STAT -eq 0 ]
@@ -534,6 +534,7 @@ then
           until [ "$CHECK_RENAMED_ENCRYPTDB_STATUS" == "available" ]
           do
             check_rename_encryptdb_availability_status
+	    sleep 60
           done
 
           if [ "$CHECK_RENAMED_ENCRYPTDB_STATUS" == "available" ]
