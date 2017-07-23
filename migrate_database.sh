@@ -542,7 +542,7 @@ then
             echo "Successfully renamed $DB_INST_NAME-encrypted to $DB_INST_NAME."
 
             # Cut replication in encrypted database
-            sleep 60
+            sleep 90
 
             echo "Will proceed on stopping replication on encrypted database..."
             EXEC_STOP_ENCRYPT_REPLICATION=`mysql -u$DB_ADMIN_USER -p$DB_ADMIN_PASSWD -h$SRC_DB_ENDPT -e "CALL mysql.rds_stop_replication;"`
