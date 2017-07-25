@@ -176,5 +176,6 @@ Example:
 1. Check the target DB data
 2. Stop the old RDS instance
 3. Check application user experience
-4. Delete the old RDS instance 
-5. For RDS instances with existing read replica before migration, re-create the read replica to be able to catch up to the master.
+4. Delete the old RDS instance
+5. Terminate the EC2 migration instance (if no longer necessary)
+6. For RDS instances with existing read replica before migration, re-create the read replica to be able to catch up to the master.
