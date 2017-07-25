@@ -28,7 +28,7 @@ In detail, the following are the operations that will be performed:
 ## Pre-requisites
 You need the following to run the script.
 
-1. An EC2 instance. This instance must be able to connect to both the source and target RDS
+1. An EC2 instance (t2.micro would suffice). This instance must be able to connect to both the source and target RDS.
 
     a. IAM Role. Create an IAM role for the EC2 instance with the following inline policies and permissions.
  
