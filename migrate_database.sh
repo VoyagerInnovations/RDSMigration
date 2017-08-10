@@ -155,6 +155,7 @@ echo "Creating KMS Key..."
 
 sed "s/IAM_USER_NAME/$IAM_USER_NAME/g" $POLICY_FILE_NAME > $POLICY_FILE_DIR/rds_kms_$DB_INST_NAME.json
 sed -i -e "s/INSTANCE_ROLE_NAME/$REPL_INSTANCE_ROLE/g" $POLICY_FILE_DIR/rds_kms_$DB_INST_NAME.json
+sed -i -e "s/ACCOUNT_NUM/$ACCOUNT_NUM/g" $POLICY_FILE_DIR/rds_kms_$DB_INST_NAME.json
 
 KMS_KEY_ID=`aws kms create-key --description $DB_INST_NAME --key-usage ENCRYPT_DECRYPT --bypass-policy-lockout-safety-check --region $REGION --policy file://rds_kms_$DB_INST_NAME.json | grep KeyId | awk -F': ' '{print $2}' | sed 's/[", ]//g'`
 KMS_KEY_STAT=`echo $?`
