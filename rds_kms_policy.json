@@ -6,7 +6,7 @@
       "Sid": "Enable IAM User Permissions",
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::853765034474:root"
+        "AWS": "arn:aws:iam::ACCOUNT_NUM:root"
       },
       "Action": "kms:*",
       "Resource": "*"
@@ -15,7 +15,7 @@
       "Sid": "Allow access for Key Administrators",
       "Effect": "Allow",
       "Principal": {
-        "AWS": "arn:aws:iam::853765034474:user/IAM_USER_NAME"
+        "AWS": "arn:aws:iam::ACCOUNT_NUM:user/IAM_USER_NAME"
       },
       "Action": [
         "kms:Create*",
@@ -40,8 +40,8 @@
       "Effect": "Allow",
       "Principal": {
         "AWS": [
-          "arn:aws:iam::853765034474:user/IAM_USER_NAME",
-          "arn:aws:iam::853765034474:role/INSTANCE_ROLE_NAME"
+          "arn:aws:iam::ACCOUNT_NUM:user/IAM_USER_NAME",
+          "arn:aws:iam::ACCOUNT_NUM:role/INSTANCE_ROLE_NAME"
         ]
       },
       "Action": [
@@ -58,8 +58,8 @@
       "Effect": "Allow",
       "Principal": {
         "AWS": [
-          "arn:aws:iam::853765034474:user/IAM_USER_NAME",
-          "arn:aws:iam::853765034474:role/INSTANCE_ROLE_NAME"
+          "arn:aws:iam::ACCOUNT_NUM:user/IAM_USER_NAME",
+          "arn:aws:iam::ACCOUNT_NUM:role/INSTANCE_ROLE_NAME"
         ]
       },
       "Action": [
