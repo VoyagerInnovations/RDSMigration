@@ -356,7 +356,7 @@ then
   ## Get users from source database
   echo "Getting application users from source database to be loaded to the encrypted database..."
 
-  mysql -u$DB_ADMIN_USER -p$DB_ADMIN_PASSWD -h$REPL_DB_ENDPT -e "SELECT USER, PASSWORD, HOST FROM mysql.user WHERE USER NOT IN ('rdsadmin', '$DB_ADMIN_USER', 'rdsrepladmin');" > $DB_DETAILS_DIR/$DB_INST_NAME-user.csv
+  mysql -u$DB_ADMIN_USER -p$DB_ADMIN_PASSWD -h$REPL_DB_ENDPT -e "SELECT USER, PASSWORD, HOST FROM mysql.user WHERE USER NOT IN ('rdsadmin', '$DB_ADMIN_USER', 'rdsrepladmin', 'mysql.sys');" > $DB_DETAILS_DIR/$DB_INST_NAME-user.csv
   sed -i -e 's/[[:space:]]/,/g' $DB_DETAILS_DIR/$DB_INST_NAME-user.csv
   sed -i -e '1d' $DB_DETAILS_DIR/$DB_INST_NAME-user.csv
 
