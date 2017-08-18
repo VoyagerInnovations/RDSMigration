@@ -7,7 +7,7 @@ INSTANCE_CLASS_LIST=$POLICY_FILE_DIR/instance_types.csv
 INSTANCE_ROLE_LIST=$POLICY_FILE_DIR/repl_instance_roles.txt
 
 usage () {
-  printf "\nUsage: migrate_database_updated.sh [-i <iam_user_name>] [-n <db_instance_identifier>] [-u <db_admin_user>] [-p <db_admin_passwd>] [-m <yes/no> ] [-d <db_name>] [-a <account_number>] [-z <region_name>]\n"
+  printf "\nUsage: migrate_database.sh [-i <iam_user_name>] [-n <db_instance_identifier>] [-u <db_admin_user>] [-p <db_admin_passwd>] [-m <yes/no> ] [-d <db_name>] [-a <account_number>] [-z <region_name>]\n"
   printf "\nOptions:\n"
   echo "  -i <iam_user_name>            = IAM user who will administer the KMS key to be used in encrypting the database"
   echo "  -n <db_instance_identifier>   = (Source) RDS Instance Identifier"
